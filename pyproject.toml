@@ -1,0 +1,9 @@
+[project]
+name = "rfp-rag-modular"
+version = "0.1.0"
+description = "구현되지 않은 공정을 분리한 팀 RAG 코드 뼈대"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.rag]
+package = "rfp_rag"

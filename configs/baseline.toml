@@ -1,0 +1,6 @@
+# 공정을 구현할 때 모델과 검색 설정을 이 파일에 추가한다.
+[project]
+name = "rfp-rag-modular"
+
+[paths]
+data_dir = "data"
