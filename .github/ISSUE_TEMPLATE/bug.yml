@@ -1,0 +1,17 @@
+name: 오류 수정
+description: 합성 입력으로 재현할 수 있는 오류를 기록합니다.
+title: "[오류] "
+body:
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 공정·브랜치·재현 절차
+      description: 실행 명령과 합성 입력을 적어 주세요. 비밀 값과 실제 문서 내용은 제외하세요.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 기대한 결과와 실제 결과
+    validations:
+      required: true

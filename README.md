@@ -46,18 +46,22 @@ Git은 빈 폴더를 저장하지 않으므로 `.gitkeep`만 넣었다. 담당 �
 
 ## 공동 작업
 
-초대를 수락한 팀원은 저장소를 clone한 뒤 공정별 브랜치를 만든다.
+초대를 수락한 팀원은 저장소를 clone한 뒤 **자기 작업 브랜치 → PR → 점검·동료 승인 → main** 순서로 작업한다. [팀 작업 안내](CONTRIBUTING.md)에 GitHub 화면과 터미널 절차, 충돌 해결, 작업 재시작 방법을 정리했다. [공정별 개발 기준](docs/modules.md)에서 수정할 폴더와 입력·출력을 확인한다.
 
 ```sh
-git switch -c feature/chunking
+git switch main
+git pull --ff-only
+git switch -c feature/GITHUB_ID/chunking-fixed
 # 해당 공정을 구현하고 점검한다.
 python -m unittest discover -s tests
 git diff --check
 git add rfp_rag/chunking tests
 git commit -m "Implement chunking stage"
-git push -u origin feature/chunking
+git push -u origin feature/GITHUB_ID/chunking-fixed
 ```
 
-GitHub에서 `main` 대상으로 Pull Request를 열고 다른 팀원이 검토한다. 팀원별 담당 공정은 아직 지정하지 않았다. 브랜치 보호는 현재 설정하지 않았으므로 PR 사용은 팀 운영 규칙이다.
+`GITHUB_ID`는 본인의 GitHub 계정명으로 바꾼다. GitHub에서 `main` 대상으로 Pull Request를 열고 다른 팀원이 검토한다. 공정 담당자는 팀에서 정한다. `main` 보호 규칙은 자동 점검 `offline` 통과, 동료 승인 1명, 검토 대화 해결을 요구하며 강제 push와 브랜치 삭제를 막는다. 관리자도 같은 규칙을 따른다. 처음부터 영구 공정 브랜치를 병렬 유지하지 않고, 작업마다 최신 `main`에서 브랜치를 만든다.
+
+팀원별 시작 브랜치 `work/<계정명>/starter`도 제공한다. 첫 작업에 사용할 수 있지만 기능을 미리 배정한 것은 아니다. 다음 작업부터는 위 명령으로 새 브랜치를 만든다. 저장소 설정·준비된 브랜치·확인 결과는 [브랜치 설정 기록](docs/branch-workflow-status.md)에 있다.
 
 공정 간 입력·출력은 `contracts.py`를 기준으로 맞춘다. 모델명·검색 옵션은 구현 단계에서 `configs/`에 추가한다. 설치할 의존성은 `pyproject.toml`에 기록한다. 로컬 데이터 위치는 `RFP_DATA_DIR` 환경 변수로 바꿀 수 있다. 원본 RFP·추출 본문·실제 질문과 답변·키·모델은 커밋하지 않는다. 점검에는 합성 자료를 사용한다.

@@ -1,5 +1,8 @@
 name: 코드 뼈대 점검
 on: [push, pull_request]
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -7,9 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - run: python -m unittest discover -s tests
       - run: python -m rfp_rag
-      - run: git diff --check
+      - run: python -m compileall -q rfp_rag tests
+      - name: 변경 파일 공백 검사
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --check origin/main...HEAD
+          else
+            git show --format= --check HEAD
+          fi

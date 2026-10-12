@@ -1,0 +1,32 @@
+name: 공정 개발·수정
+description: 구현할 공정과 입력·출력, 완료 조건을 정합니다.
+title: "[공정] "
+body:
+  - type: input
+    id: module
+    attributes:
+      label: 공정과 작업 브랜치
+      placeholder: "chunking / feature/계정명/chunking-fixed"
+    validations:
+      required: true
+  - type: textarea
+    id: objective
+    attributes:
+      label: 목표와 수정할 폴더
+      description: 구현·수정 이유와 범위를 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: 입력·출력과 다른 공정에 미치는 영향
+      description: 공통 자료형을 바꾸는지, 어떤 담당자와 협의할지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건과 합성 입력 점검
+      description: 예상 결과와 오류 사례를 적어 주세요. 원본 문서·키·실제 답변은 붙이지 마세요.
+    validations:
+      required: true
