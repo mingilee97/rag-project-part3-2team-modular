@@ -33,6 +33,6 @@ git log -1 --oneline
 
 ## Git과 공동 작업
 
-브랜치: `main`. 최종 커밋과 원격 동기화는 위 Git 명령과 `docs/repository-status.md`에서 확인한다. 이 파일을 포함하는 초기 커밋은 아직 작성 전이며, 완료 후 상태 파일에 게시·초대 결과를 기록한다.
+브랜치: `main`. 초기 코드 커밋은 `32fb6fdca8c290a6ad4d8dc036a4cbe5ba07180b`이며 원격에 게시했다. 후속 상태 기록은 이 문서와 `docs/repository-status.md`에 있다. 최종 커밋과 원격 동기화는 위 Git 명령으로 확인한다.
 
 팀원 계정은 기존 대시보드의 저장소 대응표에서 확인했다: `HyeongyeongKim`, `seolwoom`, `1young-codes`, `eugene527`. 소유자는 `mingilee97`다. 초대 발송과 수락은 구분해서 확인한다. 브랜치 보호·배포·기존 대시보드의 대표 저장소 변경은 이번 작업에 포함하지 않는다.
