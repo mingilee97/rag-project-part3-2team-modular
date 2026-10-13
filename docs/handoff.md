@@ -1,38 +1,59 @@
-# 인수인계
+# 기초 RAG 인수인계
 
-갱신일: 2026-10-12, 한국 시간.
+갱신일: 2026-10-13, 한국 시간.
 
-## 목표와 승인된 범위
+## 목표와 결정
 
-사용자는 처음에 Notion의 베이스라인을 모듈로 나누고 새 GitHub 저장소를 만들어 팀원을 초대하도록 요청했다. 제공 페이지의 열린 내용과 링크에서 코드를 찾지 못했다. 이후 사용자는 모든 공정 구현을 비운 최소 코드만 넣도록 변경했다. 이 결정이 기존 코드 재구성 방향을 대체한다.
+팀원들이 API와 공정 모듈을 바꿔 검증하고 결과를 비교할 기본 파이프라인을 유지한다. 빈 공정 뼈대에서 최소 흐름을 구현했으며 기존 RAG 구현을 복사하지 않았다. 정확도 개선·비용 최적화·학습·배포·원본 데이터 업로드는 이번 범위가 아니다.
 
-새 저장소는 `mingilee97/rag-project-part3-2team-modular`다. 처음 비공개로 생성했으며, 2026-10-12 후속 공개 요청에 따라 공개로 전환했다. 기존 RAG 저장소는 수정하지 않았다. 실제 데이터와 기존 코드·실험 결과·비공개 작업 이력을 복사하지 않는다. 후속 요청으로 대시보드의 이민기 저장소 링크를 새 주소로 갱신한다.
+2026-10-13 Haiku 4.5 + 로컬 TF-IDF의 실제 연결을 확인했다. 이후 GPT-5 mini + text-embedding-3-small을 기본으로 선택했으나 OpenAI 인증 오류로 전체 실행을 검증하지 못했다. PR #2 수정 요청에 따라 유료 API를 재호출하지 않고, 검증된 Haiku 경로를 기본값으로 선택했다. GPT-5 mini 설정은 `configs/openai.toml`에 별도로 유지한다.
 
-## 구현 상태
+## 구현과 검증 범위
 
-공통 자료형·검색/생성 Protocol·TOML 설정 읽기·상태 출력 CLI·미구현 오류·오프라인 점검만 있다. 공정별 폴더는 `.gitkeep`만 포함한다. 완성된 검색·생성 기능이나 동작하는 RAG 베이스라인으로 부르면 안 된다.
+기본 흐름은 문서 읽기 → 최소 글 정리 → 문자 800/중첩 100 청킹 → 로컬 TF-IDF·JSON 색인 → 코사인 Top-3 → Haiku 4.5 답변이다. 공통 `Document`, `Chunk`, `SearchHit`, `Answer` 규약을 유지한다. 재순위·분류·기억·답변 내용 검증·평가·LangSmith·웹/API 화면은 미구현이다. JSON 응답과 근거 ID 형식만 확인한다.
 
-## 다음 작업
+당시 합성 문서 두 개에서 `claude-haiku-4-5-20251001` 생성 호출 1회가 성공했다. 예산 3000만 원과 필수 기능 세 개, 근거 `office.txt:c0`을 반환했다. 공급자 응답에는 입력 661·출력 84토큰이 기록됐다. 품질 평가나 원본 100문서 실행 결과는 아니다. [당시 Haiku 실행 보고서](보고서/2026-10-13_기초-RAG.html)에 결과를 보존했다. 이번 수정에서 실제 API를 재호출하지 않았다.
 
-1. 팀에서 공정 담당자와 공통 자료형을 확정한다.
-2. 입력·청킹·임베딩·색인·검색·생성을 공정별 PR로 구현한다.
-3. 합성 입력으로 연결을 확인한 뒤 승인된 환경에서 실제 모델을 점검한다.
-4. 필요할 때 기억·분류·재순위·검증·평가·웹 기능을 추가한다.
+OpenAI는 당시 첫 임베딩 요청의 HTTP 401로 중단됐다. GPT-5 mini·nano 생성은 실제 호출하지 못했다. 별도 OpenAI 설정의 실제 성공은 미확인이며 유효한 `OPENAI_API_KEY`로 추가 검증해야 한다. 오프라인 대역 API 검사는 실제 공급자 인증이나 응답 성공의 근거가 아니다.
 
-## 실행과 확인
+이번 수정 후 오프라인 unittest 13개, 구현 상태 출력, compileall, git diff --check를 통과했다. 기본값과 명시적 Haiku 설정의 일치, 별도 OpenAI 설정과 색인 분리, 합성 입력으로 두 공급자 흐름과 오류 경계를 점검했다.
 
-```sh
-python -m rfp_rag
-python -m unittest discover -s tests
-git diff --check
-git status -sb
-git log -1 --oneline
+## 실행과 설정 교체
+
+Python 3.11 이상을 사용한다. 설치와 키 설정은 [README](../README.md)를 따른다. 기본 실행에는 `ANTHROPIC_API_KEY`, 별도 OpenAI 실행에는 `OPENAI_API_KEY`가 필요하다. 키를 코드·Git·채팅에 넣지 않는다.
+
+```powershell
+# 기본값: 로컬 TF-IDF로 검색하고 Haiku로 답변한다.
+.venv/Scripts/python -m rfp_rag --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
+# 같은 Haiku 경로를 명시적으로 선택한다.
+.venv/Scripts/python -m rfp_rag --config configs/haiku.toml --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
+# 별도 OpenAI 경로: 임베딩과 GPT-5 mini 생성 API를 사용한다. 실제 성공은 미확인이다.
+.venv/Scripts/python -m rfp_rag --config configs/openai.toml --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
 ```
 
-실제 모델 품질과 원본 문서 실행은 확인 대상에 포함하지 않는다. 현재 Python 외 추가 패키지·키·모델이 필요하지 않다. 이후 필요한 원본·모델·색인은 각자 승인된 저장 위치에서 준비해야 하며 이 저장소로 복원되지 않는다.
+TF-IDF는 로컬에서 단어·문서 빈도로 벡터를 만든다. 동의어와 한국어 조사 처리에는 한계가 있다. OpenAI 설정은 `text-embedding-3-small` API로 문서와 질문을 벡터화한다. 두 경로 모두 코사인 Top-3를 사용하지만 검색 품질의 우열은 평가하지 않았다. Haiku 색인은 `data/index/haiku.json`, OpenAI 색인은 `data/index/openai.json`으로 분리한다. 이전 OpenAI 기본값의 `data/index/baseline.json`은 새 기본값에서 사용하지 않는다. 문서나 설정을 바꾸면 해당 설정으로 `--build`를 실행한다.
 
-## Git과 공동 작업
+실제 문서는 승인된 로컬 `data/raw/` 또는 `--data-dir` 위치에 둔다. 합성 예시는 `examples/synthetic/`에 있다. 원본·본문·벡터·색인·키·모델·비공개 결과는 커밋하지 않는다. OCR·HWPX·표 구조 보존·CSV 메타데이터 연결·대화 기록은 미구현이다. 실제 RFP PDF·HWP 전체 실행은 미확인이다.
 
-브랜치: `main`. 초기 코드 커밋은 `32fb6fdca8c290a6ad4d8dc036a4cbe5ba07180b`이며 원격에 게시했다. 후속 상태 기록은 이 문서와 `docs/repository-status.md`에 있다. 최종 커밋과 원격 동기화는 위 Git 명령으로 확인한다.
+오프라인 검사는 API 키·다운로드·유료 호출 없이 수행한다.
 
-팀원 계정은 기존 대시보드의 저장소 대응표에서 확인했다: `HyeongyeongKim`, `seolwoom`, `1young-codes`, `eugene527`. 소유자는 `mingilee97`다. 초대 발송과 수락은 구분해서 확인한다. 2026-10-12 후속 요청으로 브랜치 협업 안내·PR/Issue 양식·main 보호·시작 브랜치를 추가한다. [작업 안내](../CONTRIBUTING.md), [공정 기준](modules.md), [설정 기록](branch-workflow-status.md)을 따른다. 배포와 대시보드 대표 저장소 지정은 포함하지 않는다.
+```powershell
+python -m unittest discover -s tests
+python -m rfp_rag
+python -m compileall -q rfp_rag tests
+git diff --check
+```
+
+## Git과 다음 작업
+
+저장소: [mingilee97/rag-project-part3-2team-modular](https://github.com/mingilee97/rag-project-part3-2team-modular).
+작업 브랜치: `feature/mingilee97/pipeline-basic`. 대상 브랜치: `main`.
+[PR #2](https://github.com/mingilee97/rag-project-part3-2team-modular/pull/2)에서 김현경 님의 수정 요청을 반영한다. 수정 전 기준 커밋은 `f63afee`, 최초 Haiku 구현 커밋은 `7c6ff8e`다. 후속 커밋과 push 상태는 PR 및 다음 명령으로 확인한다.
+
+```sh
+git status -sb
+git log -1 --oneline
+git rev-list --left-right --count HEAD...@{upstream}
+```
+
+다음 단계는 작성자 외 팀원의 재검토·승인·병합이다. 기존 수정 요청을 강제로 해제하거나 보호 규칙을 바꾸지 않는다. 질문 파일 입력과 문항별 결과 저장은 별도 PR로 진행할 후속 요구사항이다. OpenAI 인증 해결과 실제 실행 검증, 원본 평가, 다른 공정 개발은 추가 작업이다.

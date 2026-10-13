@@ -1,0 +1,17 @@
+# 실제 연결을 확인한 Haiku 4.5와 로컬 TF-IDF 설정이다.
+[project]
+name = "rfp-rag-modular"
+[paths]
+data_dir = "data/raw"
+index_path = "data/index/haiku.json"
+[chunking]
+size = 800
+overlap = 100
+[retrieval]
+top_k = 3
+[models]
+provider = "anthropic"
+embedding = "local-tfidf"
+generation = "claude-haiku-4-5-20251001"
+[generation]
+max_output_tokens = 2048
