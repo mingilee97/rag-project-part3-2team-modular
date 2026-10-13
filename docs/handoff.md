@@ -43,6 +43,8 @@ git diff --check
 
 최종 커밋·PR·원격 동기화는 아래 완료 기록과 git status -sb, git log -1, git rev-list --left-right --count HEAD...@{upstream}로 확인한다. 남은 운영 단계는 작성자 외 팀원의 PR 검토·승인·병합이다. 원본 평가·OpenAI 인증 해결·다른 공정 개발은 추가 작업이다.
 
+구현 커밋 `7c6ff8e`를 원격 작업 브랜치에 push했다. [PR #2](https://github.com/mingilee97/rag-project-part3-2team-modular/pull/2)를 생성했다. 보고서에 PR 링크를 넣는 후속 문서 커밋도 같은 브랜치에 저장·push한다. main은 변경하지 않았다.
+
 ## 보고서와 작업자
 
 최신 보고서: docs/보고서/2026-10-13_기초-RAG.html.
