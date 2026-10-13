@@ -7,10 +7,10 @@
 | 입력 | `ingestion/files.py`: TXT·MD·CSV, 선택 의존성으로 PDF·일반 HWP 5 |
 | 전처리 | `preprocessing/text.py`: 줄바꿈·NUL만 정리 |
 | 청킹 | `chunking/fixed.py`: 문자 800, 중첩 100 |
-| 벡터화 | `embeddings/openai.py`: 기본 text-embedding-3-small; `embeddings/tfidf.py`: Haiku용 로컬 TF-IDF |
+| 벡터화 | `embeddings/tfidf.py`: 기본 Haiku용 로컬 TF-IDF; `embeddings/openai.py`: 별도 OpenAI 설정의 text-embedding-3-small |
 | 색인 | `indexing/json_index.py`: 청크·벡터·TF-IDF 설정을 로컬 JSON으로 저장 |
 | 검색 | `retrieval/dense.py`: 코사인 유사도 Top-3 |
-| 생성 | `generation/openai.py`: 팀 기본 GPT-5 mini; `generation/anthropic.py`: 연결 확인용 Haiku 4.5 |
+| 생성 | `generation/anthropic.py`: 기본 Haiku 4.5; `generation/openai.py`: 별도 설정의 GPT-5 mini |
 | 공급자 연결 | `providers/`: HTTP API와 기존 Windows DPAPI 키 읽기 |
 | 미구현 | 재순위·분류·기억·검증·평가, API·웹 화면 |
 

@@ -1,127 +1,25 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="codex-report-answer-monitor-minutes" content="1"><title>기초 RAG 구현 결과 · 2026-10-13</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>당시 Haiku 실행 기록 · 2026-10-13</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#eef2f6;color:#183047;font:16px/1.75 system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:36px 20px}h1{font-size:32px;line-height:1.35}h2{font-size:23px;margin-top:0}section{background:white;border:1px solid #d8e0e8;border-radius:16px;padding:24px;margin:20px 0}.tag{display:inline-block;background:#dff4e8;color:#146039;border-radius:20px;padding:5px 14px;font-weight:700}.flow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:22px 0}.flow b{border:1px solid #b9cedc;border-radius:10px;padding:12px;background:#f1f7fc}.flow span{color:#537d98}.answer{border-left:5px solid #279563;padding:16px;background:#f0faf4}.notice{background:#fff4dd;border-left:5px solid #c68920;padding:14px}table{border-collapse:collapse;width:100%}td,th{text-align:left;border-bottom:1px solid #d8e0e8;padding:11px}pre{background:#182d40;color:#edf5fb;padding:18px;border-radius:10px;overflow:auto;white-space:pre-wrap;word-break:break-word}code{font-family:Consolas,monospace}a{color:#155a96}.muted{color:#516779}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.metric{padding:15px;background:#eef5fb;border-radius:10px}.metric strong{font-size:27px;display:block}footer{font-size:14px;color:#516779}
 </style></head><body><main>
-<span class="tag">Haiku 4.5 실제 연결 성공</span><h1>가장 기초적인 RAG가 작동합니다</h1><p class="muted">2026-10-13 · 기본 검색은 로컬 TF-IDF · 생성은 Haiku 4.5</p>
-<section><h2>1. 요청하신 작업</h2><p>빈 공정 폴더에, 나중에 개선한 모듈과 비교할 수 있는 최소 파이프라인을 구현했습니다. 정확도 개선과 비용 최적화 기능은 추가하지 않았습니다. 마지막 요청에 따라 Haiku 4.5를 기본 모델로 사용합니다.</p></section>
+<span class="tag">Haiku 4.5 실제 연결 성공</span><h1>당시 Haiku 실행 기록</h1><p class="muted">2026-10-13 당시 실행 · 검색은 로컬 TF-IDF · 생성은 Haiku 4.5</p>
+<section><h2>기록의 범위</h2><p>이 보고서는 2026-10-13 기존 Haiku 실행 당시의 결과와 검사 수치를 보존한 기록입니다. PR #2 수정에서는 유료 API를 다시 호출하지 않았습니다. 당시 경로를 재현하는 명령에 <code>--config configs/haiku.toml</code>을 명시했습니다. 현재 기본 실행과 별도 GPT-5 mini 설정은 <a href="../../README.md">README</a>를 따르세요.</p></section><section><h2>1. 요청하신 작업</h2><p>빈 공정 폴더에, 나중에 개선한 모듈과 비교할 수 있는 최소 파이프라인을 구현했습니다. 정확도 개선과 비용 최적화 기능은 추가하지 않았습니다. 당시 실행에서는 Haiku 4.5를 기본 모델로 사용했습니다.</p></section>
 <section><h2>2. 구현한 흐름</h2><div class="flow" aria-label="문서에서 답변까지의 흐름"><b>로컬 문서</b><span>→</span><b>고정 길이 청크</b><span>→</span><b>TF-IDF 벡터</b><span>→</span><b>코사인 Top-3</b><span>→</span><b>Haiku 4.5 답변</b></div><table><tr><th>항목</th><th>구현</th></tr><tr><td>문서 입력</td><td>TXT·MD·CSV, 선택 의존성으로 텍스트 PDF·일반 HWP 5</td></tr><tr><td>청킹·색인</td><td>문자 800·중첩 100, 청크와 벡터를 로컬 JSON에 저장</td></tr><tr><td>검색</td><td>단어 빈도 기반 TF-IDF와 코사인 유사도. 별도 DB 서버 없음</td></tr><tr><td>생성</td><td><code>claude-haiku-4-5-20251001</code> 한 번 호출, 답변과 근거 ID 반환</td></tr><tr><td>키 설정</td><td>기존 프로그램에 OpenAI 입력칸 추가. 기존 Anthropic·LangSmith 값과 암호화 방식 유지</td></tr></table></section>
 <section><h2>3. 실제 실행 결과</h2><p>원본 RFP 대신 실행 점검용 합성 문서 두 개를 사용했습니다.</p><p><b>질문:</b> 새봄연구소 사업의 예산과 필수 기능은 무엇인가요?</p><div class="answer"><b>실제 Haiku 응답</b><p>새봄연구소 사업의 예산은 3000만 원이며, 필수 기능은 회의실 예약, 예약 취소, 사용 현황 조회입니다.</p><p><b>근거:</b> <code>office.txt:c0</code></p></div><div class="grid"><div class="metric"><strong>12 / 12</strong>파이프라인 오프라인 검사</div><div class="metric"><strong>11 / 11</strong>키 설정·이전 형식 호환 검사</div><div class="metric"><strong>1회</strong>실제 Haiku 생성 성공</div><div class="metric"><strong>661 / 84</strong>공급자 응답의 입력 / 출력 토큰</div></div><p>Python 컴파일과 Git 공백 검사도 통과했습니다. 위 토큰 수는 API 응답에서 확인한 값이며, 채팅 입력 크기나 청구액이 아닙니다.</p></section>
 <section><h2>4. 실패하거나 확인하지 않은 부분</h2><div class="notice">OpenAI는 첫 임베딩 요청에서 HTTP 401 인증 오류로 중단됐습니다. GPT-5 mini·nano 생성 단계에는 도달하지 못했습니다. 설정과 코드는 남겼지만 실제 동작 확인은 끝나지 않았습니다.</div><p>정확도 평가·원본 RFP 100문서 실행·실제 PDF/HWP 전체 검증은 하지 않았습니다. 스캔 PDF의 OCR·HWPX·표 구조 보존·CSV 메타데이터 연결은 미구현입니다. 키 입력창은 합성 검사와 실행을 확인했으며 실제 창의 시각 검수는 하지 않았습니다.</p></section>
-<section><h2>5. 결정과 이유</h2><p>기본 모델은 마지막 요청인 Haiku 4.5로 정했습니다. OpenAI 인증 없이 작동하도록 검색은 로컬 TF-IDF로 구성했습니다. 단어 일치만으로 검색하므로 한국어 조사와 동의어 처리에 한계가 있습니다.</p><p>재순위·질문 분류·대화 기억·답변 내용 검증·품질 평가·LangSmith·웹 화면은 비워 두었습니다. JSON과 근거 ID의 형식만 확인합니다. 각 담당자가 공통 입력·출력을 유지하며 기본 모듈을 바꿀 수 있습니다.</p></section>
-<section><h2>6. 바로 실행하기와 다음 단계</h2><p>프로젝트 폴더에서 아래 명령을 실행하면 합성 문서로 질문합니다. 질문 실행에는 Anthropic API 사용량이 발생합니다. 이 PC는 기존 암호화 Anthropic 키를 사용합니다.</p><pre><code>.venv/Scripts/python -m rfp_rag --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage</code></pre><p>실제 문서는 로컬 <code>data/raw/</code>에 준비합니다. 문서를 바꾸면 <code>--build</code>로 다시 색인을 만드세요. 원본·키·본문·색인은 Git에 올리지 않습니다.</p><p id="pr-status"><a href="https://github.com/mingilee97/rag-project-part3-2team-modular/pull/2">PR #2: 기초 RAG 기준선 구현</a>에 코드와 보고서를 올렸습니다. main 병합에는 다른 팀원의 검토와 승인이 필요합니다.</p><p><a href="https://github.com/mingilee97/rag-project-part3-2team-modular">팀 저장소</a> · <a href="../../README.md">실행 안내</a></p><p><b>추가 결정은 필요하지 않습니다.</b> 아래 답변은 선택 사항입니다. 공식 자동 확인은 1분 간격으로 설정했으며 실제 실행 시점은 지연될 수 있습니다.</p></section>
+<section><h2>5. 결정과 이유</h2><p>당시 기본 모델은 요청에 따라 Haiku 4.5로 정했습니다. OpenAI 인증 없이 작동하도록 검색은 로컬 TF-IDF로 구성했습니다. 단어 일치만으로 검색하므로 한국어 조사와 동의어 처리에 한계가 있습니다.</p><p>재순위·질문 분류·대화 기억·답변 내용 검증·품질 평가·LangSmith·웹 화면은 비워 두었습니다. JSON과 근거 ID의 형식만 확인합니다. 각 담당자가 공통 입력·출력을 유지하며 기본 모듈을 바꿀 수 있습니다.</p></section>
+<section><h2>6. 당시 실행 경로를 명시한 재현 명령과 다음 단계</h2><p>아래 명령은 당시 사용한 Haiku + 로컬 TF-IDF 경로를 명시합니다. 색인과 질문 벡터화는 로컬에서 처리하며, 답변 생성에는 Anthropic API 사용량이 발생합니다. 유효한 ANTHROPIC_API_KEY가 필요합니다. OpenAI 임베딩과 GPT-5 mini는 별도 configs/openai.toml을 지정해야 하며 실제 성공은 미확인입니다.</p><pre><code>.venv/Scripts/python -m rfp_rag --config configs/haiku.toml --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage</code></pre><p>실제 문서는 로컬 <code>data/raw/</code>에 준비합니다. 문서를 바꾸면 <code>--build</code>로 다시 색인을 만드세요. 원본·키·본문·색인은 Git에 올리지 않습니다.</p><p id="pr-status"><a href="https://github.com/mingilee97/rag-project-part3-2team-modular/pull/2">PR #2: 기초 RAG 기준선 구현</a>에 코드와 보고서를 올렸습니다. main 병합에는 다른 팀원의 검토와 승인이 필요합니다.</p><p><a href="https://github.com/mingilee97/rag-project-part3-2team-modular">팀 저장소</a> · <a href="../../README.md">실행 안내</a></p></section>
 <footer>API 형식 확인: <a href="https://platform.claude.com/docs/en/models/haiku-4-5/overview">Haiku 4.5 공식 문서</a> · <a href="https://platform.claude.com/docs/en/build-with-claude/structured-outputs">JSON 출력 공식 문서</a>. 로컬 키 프로그램 변경은 이 팀 저장소의 공개 PR에 포함되지 않습니다.</footer>
-<!-- 답변 양식. 보고서의 맨 끝(</body> 앞)에 통째로 붙인다.
-     고르는 질문은 '여기에 질문' 자리에 <fieldset>으로 넣는다. 보기마다 그림을 보여 주고, name은 질문마다 다르게,
-     value는 사용자가 읽어도 뜻이 통하는 말로 쓴다. 고를 것이 없으면 그 자리를 비운다.
-     맨 마지막 글칸(name="말")은 늘 남긴다. 사용자가 채팅에 쓰듯이 적는 칸이다. -->
+<!-- 보고서는 열람 전용이다. 의견과 후속 지시는 소유 채팅에서 받는다. -->
 <style>
-#answer-form{background:#fff;border:2px solid #c96a1b;border-radius:12px;padding:20px;margin:28px 0}
-#answer-form h2{margin-top:0}
-#answer-form fieldset{border:1px solid #ddd;border-radius:8px;margin:0 0 16px;padding:12px}
-#answer-form .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
-#answer-form .choice{border:1px solid #ccc;border-radius:8px;padding:8px;cursor:pointer}
-#answer-form .choice:has(input:checked){border:2px solid #c96a1b;background:#fff6ee}
-#answer-form .choice img{width:100%;display:block;border-radius:4px;margin-bottom:6px}
-#answer-form .choice .pair{display:flex;gap:6px}
-#answer-form .choice .pair img{width:calc(50% - 3px)}
-#answer-form textarea{width:100%;min-height:110px;box-sizing:border-box;font:inherit;padding:10px}
-#answer-form button{background:#c96a1b;color:#fff;border:0;border-radius:8px;padding:12px 20px;font:inherit;cursor:pointer}
-#answer-form button:disabled{opacity:.5}
-.answered-banner{position:sticky;top:0;z-index:9;background:#555;color:#fff;padding:12px 16px;font-weight:bold}
-.closed-cover{display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;font-size:20px;line-height:1.8;background:#eee;color:#333}
+#report-chat-notice{background:#eef5ff;border:1px solid #a9c4ed;border-radius:12px;padding:20px;margin:28px 0}
+#report-chat-notice h2{margin-top:0}
 </style>
-<form id="answer-form">
-  <h2>답하기</h2>
-  <!-- 여기에 질문 -->
-  <label for="answer-message"><b>Codex에게 하실 말</b> (채팅창에 쓰듯이 적어 주세요. Codex가 이 말을 채팅으로 받은 말과 똑같이 따릅니다.)</label>
-  <textarea id="answer-message" name="말"></textarea>
-  <p id="answer-delivery-status" role="note"></p>
-  <p><button type="submit">답을 저장하고 이 보고서 닫기</button></p>
-  <p id="answer-state" role="status"></p>
-</form>
-<script>
-(() => {
-  const form = document.getElementById('answer-form'), state = document.getElementById('answer-state');
-  const interval = Number(document.querySelector('meta[name="codex-report-answer-monitor-minutes"]')?.content || 0);
-  const monitored = Number.isInteger(interval) && interval >= 1 && interval <= 60;
-  let deliveryMessage = monitored
-    ? '보고서의 자동 확인 연결 상태를 확인하는 중입니다.'
-    : '답변 저장만으로 채팅이 자동 실행되지는 않습니다. 저장 후 채팅에 “답변 확인”을 한 줄 보내 주세요.';
-  document.getElementById('answer-delivery-status').textContent = deliveryMessage;
-  async function showDeliveryStatus() {
-    if (!monitored) return;
-    const notice = document.getElementById('answer-delivery-status');
-    if (!notice) return;
-    try {
-      const response = await fetch(location.pathname.replace(/\.html$/, '.상태.json'), {cache: 'no-store'});
-      if (!response.ok) throw new Error('상태 없음');
-      const status = await response.json();
-      const name = decodeURIComponent(location.pathname).split('/').pop();
-      if (status.report_name !== name || !status.active || status.interval_minutes !== interval) {
-        deliveryMessage = '이 보고서는 현재 자동 확인 대상이 아닙니다. 최신 보고서를 사용하거나 채팅에 한 줄 보내 주세요.';
-      } else {
-        const checked = status.last_checked_at ? status.last_checked_at.replace('T', ' ').slice(0, 19) : '첫 확인 대기';
-        const age = status.last_checked_at ? Date.now() - Date.parse(status.last_checked_at) : 0;
-        const delayed = Number.isFinite(age) && age > Math.max(120000, interval * 180000);
-        deliveryMessage = delayed
-          ? `자동 확인이 지연되고 있습니다. 마지막 확인: ${checked}. 바로 이어가려면 채팅에 “답변 확인”을 보내 주세요.`
-          : `자동 확인 ${interval}분 간격 · 마지막 확인: ${checked} · 상태: ${status.answer_status || '새 답변 대기'}. 저장 즉시 실행을 보장하지 않으며, 처리 결과는 채팅으로 알려드립니다.`;
-      }
-    } catch (_) {
-      deliveryMessage = '자동 확인 상태 기록을 확인할 수 없습니다. 바로 진행하려면 채팅에 “답변 확인”을 보내 주세요.';
-    }
-    notice.textContent = deliveryMessage;
-  }
-  showDeliveryStatus();
-  if (monitored) setInterval(showDeliveryStatus, 15000);
-  const lock = text => { for (const el of form.elements) el.disabled = true; state.textContent = text; };
-  if (location.protocol === 'file:') return lock('파일로 연 화면이라 여기서는 답을 저장할 수 없습니다. 채팅으로 답해 주세요.');
-  fetch(location.pathname.replace(/\.html$/, '.답변.json'), {cache: 'no-store'})
-    .then(r => r.ok ? r.json() : null)
-    .then(a => {
-      if (!a) return;
-      document.body.insertAdjacentHTML('afterbegin',
-        '<div class="answered-banner">이미 답한 보고서입니다 (' + a.saved_at.slice(0, 16).replace('T', ' ') + '). 지금 볼 것은 더 새 보고서에 있습니다.</div>');
-      lock('이미 답했습니다.');
-    })
-    .catch(() => {});
-  let saving = false;
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (saving) return;
-    const answers = {};
-    for (const [key, value] of new FormData(form)) {
-      if (!String(value).trim()) continue;
-      answers[key] = key in answers ? [].concat(answers[key], value) : value;
-    }
-    if (!Object.keys(answers).length) return void (state.textContent = '고르거나 적은 것이 없습니다.');
-    saving = true;
-    form.querySelector('button[type="submit"]').disabled = true;
-    state.textContent = '저장하는 중입니다…';
-    try {
-      const response = await fetch('/answer', {method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({page: location.pathname, answers})});
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-      if (!data.saved_at || decodeURIComponent(data.page) !== decodeURIComponent(location.pathname)) {
-        throw new Error('저장 확인 응답이 올바르지 않습니다. 탭을 닫지 않습니다.');
-      }
-      document.body.innerHTML = '<div class="closed-cover" role="status">답변을 저장했습니다.<br>' + deliveryMessage + '<br>이 보고서 탭을 닫습니다.</div>';
-      setTimeout(() => {
-        window.close();
-        // 일반 브라우저 탭을 직접 연 경우에는 닫기가 제한될 수 있다.
-        setTimeout(() => {
-          if (!window.closed) document.body.innerHTML = '<div class="closed-cover" role="status">답변은 저장했습니다. 브라우저가 자동 닫기를 허용하지 않았습니다.<br>이 탭은 직접 닫아 주세요.</div>';
-        }, 400);
-      }, 250);
-    } catch (error) {
-      saving = false;
-      form.querySelector('button[type="submit"]').disabled = false;
-      state.textContent = (error.message || '저장하지 못했습니다.') + ' 채팅으로 답해 주셔도 됩니다.';
-    }
-  });
-})();
-</script>
+<aside id="report-chat-notice" role="note">
+<h2>대화는 이 보고서를 연 채팅에서 이어갑니다</h2>
+<p>보고서는 결과를 확인하는 화면입니다. 질문, 의견, 수정 요청은 Codex의 해당 채팅에 적어 주세요.</p>
+<p>보고서의 자동 답변과 응답 대기는 꺼져 있습니다.</p>
+</aside>
 
 </main></body></html>

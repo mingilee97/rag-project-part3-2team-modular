@@ -37,7 +37,7 @@ class BaselineTests(unittest.TestCase):
             root = Path(folder)
             (root / 'a.txt').write_text('회의실 예약 사업입니다.', encoding='utf-8')
             (root / 'b.txt').write_text('도서 검색 사업입니다.', encoding='utf-8')
-            config = load('configs/haiku.toml')
+            config = load()
             config['paths'] = {'data_dir': root, 'index_path': root / 'index.json'}
             with patch('rfp_rag.pipeline.create_client', side_effect=AssertionError('로컬 색인은 API를 사용하면 안 됩니다')):
                 build(config)
@@ -63,7 +63,7 @@ class BaselineTests(unittest.TestCase):
             root = Path(folder)
             (root / 'a.txt').write_text('회의실 예약 사업입니다.', encoding='utf-8')
             (root / 'b.txt').write_text('도서 검색 사업입니다.', encoding='utf-8')
-            config = load()
+            config = load('configs/openai.toml')
             config['paths'] = {'data_dir': root, 'index_path': root / 'index.json'}
             config['retrieval']['top_k'] = 1
             client = FakeClient()

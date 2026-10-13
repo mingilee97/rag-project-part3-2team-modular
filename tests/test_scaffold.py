@@ -7,6 +7,18 @@ from rfp_rag.settings import ROOT, load
 
 
 class ScaffoldTests(unittest.TestCase):
+    def test_default_matches_verified_haiku_and_openai_stays_separate(self):
+        baseline = load()
+        haiku = load('configs/haiku.toml')
+        openai = load('configs/openai.toml')
+        self.assertEqual(baseline, haiku)
+        self.assertEqual(baseline['models']['provider'], 'anthropic')
+        self.assertEqual(openai['models'], {
+            'provider': 'openai', 'embedding': 'text-embedding-3-small',
+            'generation': 'gpt-5-mini',
+        })
+        self.assertNotEqual(baseline['paths']['index_path'], openai['paths']['index_path'])
+
     def test_pipeline_rejects_empty_question_and_missing_index(self):
         import tempfile
         from pathlib import Path

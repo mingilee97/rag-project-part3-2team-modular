@@ -13,7 +13,7 @@ def main() -> int:
     parser.add_argument("--data-dir", type=Path, help="로컬 문서 폴더")
     parser.add_argument("--index", type=Path, help="로컬 JSON 색인 경로")
     parser.add_argument("--build", action="store_true", help="문서를 읽고 설정된 방식으로 색인을 만든다.")
-    parser.add_argument("--ask", help="임베딩 검색 후 설정된 OpenAI 모델에 질문한다.")
+    parser.add_argument("--ask", help="벡터 검색 후 설정된 공급자 모델에 질문한다.")
     parser.add_argument("--usage", action="store_true", help="공급자가 반환한 토큰 사용량을 표시한다.")
     args = parser.parse_args()
     try:
