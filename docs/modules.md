@@ -1,6 +1,20 @@
 # 공정별 개발 기준
 
-각 공정은 자기 폴더 안에서 구현한다. 첫 PR에서 입력·출력과 합성 입력 예제를 확정하고, 연결이 필요한 공정 담당자와 협의한다. 아래 규약은 개발 출발점이며 현재 구현된 공정은 없다.
+각 공정은 자기 폴더 안에서 구현한다. 연결이 필요한 공정 담당자와 협의한다. 2026-10-13 요청에 따라 최소 연결을 구현했다. 공통 규약은 유지하며 담당자를 지정하지 않았다.
+
+| 공정 | 현재 기초 구현 |
+|---|---|
+| 입력 | `ingestion/files.py`: TXT·MD·CSV, 선택 의존성으로 PDF·일반 HWP 5 |
+| 전처리 | `preprocessing/text.py`: 줄바꿈·NUL만 정리 |
+| 청킹 | `chunking/fixed.py`: 문자 800, 중첩 100 |
+| 벡터화 | `embeddings/tfidf.py`: 기본 로컬 TF-IDF; `embeddings/openai.py`: 선택 OpenAI |
+| 색인 | `indexing/json_index.py`: 청크·벡터·TF-IDF 설정을 로컬 JSON으로 저장 |
+| 검색 | `retrieval/dense.py`: 코사인 유사도 Top-3 |
+| 생성 | `generation/anthropic.py`: 기본 Haiku 4.5; `generation/openai.py`: 선택 GPT-5 nano/mini |
+| 공급자 연결 | `providers/`: HTTP API와 기존 Windows DPAPI 키 읽기 |
+| 미구현 | 재순위·분류·기억·검증·평가, API·웹 화면 |
+
+TF-IDF는 학습한 의미 임베딩 모델이 아니라 단어 빈도 벡터다. `decode_answer`는 JSON과 근거 ID의 형식만 확인한다. 별도의 답변 내용 검증 공정을 구현한 것은 아니다. 새 공정은 기존 기준선과 입력·출력을 비교하며 교체한다.
 
 | 공정 | 수정 폴더 | 입력 → 출력 기준 |
 |---|---|---|

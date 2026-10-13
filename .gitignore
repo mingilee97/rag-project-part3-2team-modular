@@ -22,3 +22,9 @@ results/**
 logs/
 .DS_Store
 .pytest_cache/
+docs/handoff/
+*.답변.json
+*.상태.json
+.codex-report-open.html
+report-server-*.log
+docs/보고서/*launcher*.json

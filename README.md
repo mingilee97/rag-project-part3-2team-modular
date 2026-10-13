@@ -1,67 +1,71 @@
-# 팀 RAG · 최소 코드 뼈대
+# 팀 RAG · 가장 기초적인 기준선
 
-**실제 RAG 공정은 모두 미구현이다.** 기존 메인 RAG 코드를 복사하지 않고, 팀원이 각 공정을 나눠 개발할 수 있도록 폴더·공통 자료형·설정·실행 진입점만 만들었다. 외부 패키지나 모델 없이 Python 3.11 이상에서 상태를 확인할 수 있다.
+**문서를 읽고, 청크로 나누고, 검색한 근거로 답변하는 최소 RAG를 구현했다.** 2026-10-13 사용자의 최종 선택에 따라 기본 생성 모델은 **Claude Haiku 4.5**다. OpenAI 키 인증이 실패하여 기본 검색은 API가 필요 없는 **로컬 TF-IDF + 코사인 유사도 Top-3**로 구성했다. 정확도 개선이나 비용 최적화가 목적이 아니라, 앞으로 바꾼 모듈과 비교할 수 있는 작동 기준선이 목적이다.
 
-사용자가 제공한 프로젝트 가이드의 열린 내용과 링크에서 별도의 베이스라인 코드를 찾지 못했다. 이 코드는 제공된 베이스라인의 복제본이 아니라, 2026-10-12 사용자 요청에 따라 새로 작성한 빈 구현 뼈대다. 현재 상태와 다음 작업은 [인수인계](docs/handoff.md)에 있다.
+```text
+TXT·MD·CSV·PDF·HWP → 최소 글 정리 → 고정 길이 청크
+→ 로컬 TF-IDF 벡터·JSON 색인 → 질문과 코사인 유사도 Top-3
+→ Haiku 4.5에 검색 근거 전달 → 답변·근거 ID
+```
 
-## 시작
+기존 RAG 코드를 복사하지 않고 빈 공정 폴더에 새로 작성했다. 공통 `Document`, `Chunk`, `SearchHit`, `Answer` 규약을 유지한다. 재순위·질문 분류·대화 기억·답변 검증·품질 평가는 미구현이다. 현재 상태와 다음 작업은 [인수인계](docs/handoff.md), 공정별 파일은 [공정 기준](docs/modules.md)에 있다.
 
-```sh
-git clone https://github.com/mingilee97/rag-project-part3-2team-modular.git
-cd rag-project-part3-2team-modular
+## 가장 빠르게 실행하기
+
+Python 3.11 이상이 필요하다. TXT·MD·CSV 실행에는 외부 패키지가 필요 없다. PDF·HWP도 읽을 때는 선택 의존성을 설치한다.
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python -m pip install -e ".[documents]"
+```
+
+이 PC에서는 바탕화면 **RAG API 키 설정**을 열고 **Anthropic API 키**를 직접 입력한 뒤 **암호화 저장**을 누른다. 기존 DPAPI 저장소에서 현재 Windows 사용자 권한으로 읽는다. 기존 저장 값을 화면에 표시하거나 키 파일을 저장소에 복사하지 않는다. OpenAI 입력칸도 추가했지만 기본 Haiku 실행에는 필요 없다. LangSmith는 사용하지 않는다.
+
+다른 PC 또는 Linux에서는 현재 프로세스의 `ANTHROPIC_API_KEY`를 직접 설정한다. Windows 암호화 키는 다른 PC나 팀원에게 자동으로 공유되지 않는다. 키를 코드·Git·채팅에 넣지 않는다.
+
+합성 문서 두 개로 실제 모델을 호출하는 명령이다. **색인은 로컬에서 만들고, 질문 실행은 Anthropic 유료 API를 호출한다.**
+
+```powershell
+.venv/Scripts/python -m rfp_rag --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
+```
+
+처음 색인을 만든 뒤에는 질문만 실행한다. 문서를 바꾸면 `--build`를 다시 실행한다. 색인의 자동 갱신은 구현하지 않았다.
+
+```powershell
+.venv/Scripts/python -m rfp_rag --ask "새봄연구소 사업의 예산은 얼마인가요?"
+```
+
+실제 문서는 로컬 `data/raw/`에 넣거나 `--data-dir`/`RFP_DATA_DIR`로 위치를 지정한다. 이 저장소에는 원본 문서가 없다. 인덱스 파일에는 본문과 벡터가 있으므로 Git에서 제외한다. 입력 자료와 생성 답변을 자동으로 원격 저장소에 올리지 않는다.
+
+## 설정과 제한
+
+`configs/baseline.toml`은 Haiku 4.5, 로컬 TF-IDF, 문자 기준 크기 800·중첩 100, Top-3, 출력 토큰 상한 2048을 사용한다. 별도 벡터 DB 서버, 학습, 의미 청킹, 메타데이터 필터, 재순위, 자동 재시도, 대화 기록, LangSmith, 웹 화면은 추가하지 않았다.
+
+TF-IDF는 단어가 겹치는 정도로 검색한다. 동의어와 한국어 조사 처리에는 한계가 있다. 질문과 겹치는 단어가 없으면 모델 호출 없이 근거 없음으로 반환한다. JSON 응답과 근거 ID 형식은 확인하지만, 답변 내용의 정확성을 보장하거나 별도 검증 모델을 호출하지 않는다.
+
+TXT·MD는 UTF-8, CSV는 행을 글로 읽는다. `data_list.csv`와 문서의 메타데이터 자동 연결은 미구현이다. PDF는 텍스트 추출만 지원하며 스캔 PDF의 OCR은 미구현이다. HWP는 일반 HWP 5 본문을 읽으며 암호화·배포용 HWP, HWPX, 표 구조 보존은 지원하지 않는다. 실제 RFP PDF·HWP 전체 실행은 아직 확인하지 않았다.
+
+## OpenAI로 실행하기
+
+사용자는 처음 GPT-5 mini를 요청한 뒤 nano로 변경했다. `configs/openai.toml`에는 `text-embedding-3-small → 코사인 Top-3 → gpt-5-nano`를 남겼다. mini를 사용할 때는 그 파일의 `generation`을 `gpt-5-mini`로 바꾼다. Windows의 OpenAI 입력칸 또는 현재 프로세스의 `OPENAI_API_KEY`를 사용한다. Haiku 색인과 경로를 분리했다.
+
+```powershell
+.venv/Scripts/python -m rfp_rag --config configs/openai.toml --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산은 얼마인가요?" --usage
+```
+
+OpenAI 실행은 2026-10-13 첫 임베딩 요청에서 HTTP 401로 중단됐다. nano·mini 생성까지 도달하지 않았으므로 실제 동작 확인이 끝난 것은 아니다. 유효한 OpenAI 키가 필요하다. API 오류에는 키나 공급자 오류 본문을 출력하지 않는다.
+
+## 확인된 실행과 팀 작업
+
+2026-10-13 합성 문서 두 개를 로컬에서 색인·검색하고 Haiku 4.5의 실제 답변을 받았다. 예산 3000만 원과 회의실 예약·예약 취소·사용 현황 조회를 답했으며 근거는 `office.txt:c0`이었다. 이는 연결 점검이며 정확도 평가나 원본 100문서 검증은 아니다.
+
+오프라인 검사는 API 키·모델 다운로드·유료 호출 없이 실행한다.
+
+```powershell
+python -m unittest discover -s tests
 python -m rfp_rag
-python -m unittest discover -s tests
-```
-
-`python -m rfp_rag`는 각 공정의 미구현 상태를 출력한다. `python -m rfp_rag --ask "질문"`은 미구현 안내와 종료 코드 2를 반환한다. 데이터·모델·색인을 만들거나 API를 호출하지 않는다.
-
-## 역할별 구조
-
-| 위치 | 구현할 역할 | 현재 상태 |
-|---|---|---|
-| `rfp_rag/ingestion/` | HWP·PDF·CSV 입력 | 빈 폴더 |
-| `rfp_rag/preprocessing/` | 글 정리·메타데이터 정규화 | 빈 폴더 |
-| `rfp_rag/chunking/` | 청크 생성 | 빈 폴더 |
-| `rfp_rag/embeddings/` | 청크·질문 임베딩 | 빈 폴더 |
-| `rfp_rag/indexing/` | 색인 생성·저장·불러오기 | 빈 폴더 |
-| `rfp_rag/retrieval/` | 근거 검색 | 빈 폴더 |
-| `rfp_rag/reranking/` | 검색 결과 재순위 | 빈 폴더 |
-| `rfp_rag/routing/` | 질문 종류 분류 | 빈 폴더 |
-| `rfp_rag/generation/` | 근거 기반 답변 생성 | 빈 폴더 |
-| `rfp_rag/memory/` | 대화 맥락 관리 | 빈 폴더 |
-| `rfp_rag/verification/` | 답변·근거 검증 | 빈 폴더 |
-| `rfp_rag/evaluation/` | 정확성·근거·속도 평가 | 빈 폴더 |
-| `rfp_rag/providers/` | 로컬 모델·API 연결 | 빈 폴더 |
-| `rfp_rag/contracts.py` | Document·Chunk·SearchHit·Answer, 검색·생성 호출 규약 | 자료형만 구현 |
-| `rfp_rag/pipeline.py` | 공정 연결 | 상태 출력과 미구현 오류만 구현 |
-| `rfp_rag/settings.py`, `configs/` | 설정 읽기·실험 설정 | 최소 설정만 구현 |
-| `prompts/` | 생성·분류·평가 프롬프트 | 빈 폴더 |
-| `apps/api/`, `apps/web/` | API·웹 화면 | 빈 폴더 |
-| `data/`, `models/`, `results/` | 로컬 입력·중간 산출물·모델·결과 | 빈 폴더, 내용은 Git 제외 |
-| `notebooks/`, `deployment/` | 실험 노트북·배포 설정 | 빈 폴더 |
-| `docs/reports/`, `docs/presentation/` | 보고서·발표 자료 | 빈 폴더 |
-| `tests/`, `.github/` | 오프라인 점검·PR 양식·CI | 기본 점검 구성 |
-
-Git은 빈 폴더를 저장하지 않으므로 `.gitkeep`만 넣었다. 담당 공정을 구현할 때 파일을 추가하고 해당 상태·문서·점검을 갱신한다. 재순위·질문 분류 등 선택 공정을 모두 구현해야 최소 RAG가 실행되는 것은 아니다. 우선 입력 → 청킹 → 임베딩·색인 → 검색 → 생성 흐름을 연결한다.
-
-## 공동 작업
-
-초대를 수락한 팀원은 저장소를 clone한 뒤 **자기 작업 브랜치 → PR → 점검·동료 승인 → main** 순서로 작업한다. [팀 작업 안내](CONTRIBUTING.md)에 GitHub 화면과 터미널 절차, 충돌 해결, 작업 재시작 방법을 정리했다. [공정별 개발 기준](docs/modules.md)에서 수정할 폴더와 입력·출력을 확인한다.
-
-```sh
-git switch main
-git pull --ff-only
-git switch -c feature/GITHUB_ID/chunking-fixed
-# 해당 공정을 구현하고 점검한다.
-python -m unittest discover -s tests
+python -m compileall -q rfp_rag tests
 git diff --check
-git add rfp_rag/chunking tests
-git commit -m "Implement chunking stage"
-git push -u origin feature/GITHUB_ID/chunking-fixed
 ```
 
-`GITHUB_ID`는 본인의 GitHub 계정명으로 바꾼다. GitHub에서 `main` 대상으로 Pull Request를 열고 다른 팀원이 검토한다. 공정 담당자는 팀에서 정한다. `main` 보호 규칙은 자동 점검 `offline` 통과, 동료 승인 1명, 검토 대화 해결을 요구하며 강제 push와 브랜치 삭제를 막는다. 관리자도 같은 규칙을 따른다. 처음부터 영구 공정 브랜치를 병렬 유지하지 않고, 작업마다 최신 `main`에서 브랜치를 만든다.
-
-팀원별 시작 브랜치 `work/<계정명>/starter`도 제공한다. 첫 작업에 사용할 수 있지만 기능을 미리 배정한 것은 아니다. 다음 작업부터는 위 명령으로 새 브랜치를 만든다. 저장소 설정·준비된 브랜치·확인 결과는 [브랜치 설정 기록](docs/branch-workflow-status.md)에 있다.
-
-공정 간 입력·출력은 `contracts.py`를 기준으로 맞춘다. 모델명·검색 옵션은 구현 단계에서 `configs/`에 추가한다. 설치할 의존성은 `pyproject.toml`에 기록한다. 로컬 데이터 위치는 `RFP_DATA_DIR` 환경 변수로 바꿀 수 있다. 원본 RFP·추출 본문·실제 질문과 답변·키·모델은 커밋하지 않는다. 점검에는 합성 자료를 사용한다.
+팀원은 최신 main에서 자기 작업 브랜치를 만들고 공정을 수정한 뒤 PR로 합친다. [팀 작업 안내](CONTRIBUTING.md)를 따른다. main에는 직접 push하지 않는다. 기본 입력·출력을 유지한 채 담당 모듈부터 교체하면 된다. 원본 RFP·본문·색인·키·비공개 평가 결과는 커밋하지 않는다.

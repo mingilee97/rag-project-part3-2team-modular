@@ -1,0 +1,17 @@
+# OpenAI 키 인증이 가능한 환경에서 사용하는 기초 설정이다.
+[project]
+name = "rfp-rag-modular"
+[paths]
+data_dir = "data/raw"
+index_path = "data/index/openai.json"
+[chunking]
+size = 800
+overlap = 100
+[retrieval]
+top_k = 3
+[models]
+provider = "openai"
+embedding = "text-embedding-3-small"
+generation = "gpt-5-nano"
+[generation]
+max_output_tokens = 2048

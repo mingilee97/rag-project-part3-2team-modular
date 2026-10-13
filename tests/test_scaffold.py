@@ -7,20 +7,27 @@ from rfp_rag.settings import ROOT, load
 
 
 class ScaffoldTests(unittest.TestCase):
-    def test_unimplemented_pipeline_does_not_fabricate_answer(self):
-        with self.assertRaises(NotImplementedError):
-            ask("합성 질문", load())
+    def test_pipeline_rejects_empty_question_and_missing_index(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as folder:
+            config = load()
+            config['paths']['index_path'] = Path(folder) / 'missing.json'
+            with self.assertRaises(FileNotFoundError):
+                ask("합성 질문", config)
         with self.assertRaises(ValueError):
             ask("  ", load())
 
-    def test_every_stage_is_explicitly_unimplemented(self):
+    def test_optional_stages_remain_unimplemented(self):
         self.assertEqual(set(status()), set(STAGES))
-        self.assertEqual(set(status().values()), {"미구현"})
+        for name in ('reranking', 'routing', 'memory', 'verification', 'evaluation'):
+            self.assertEqual(status()[name], '미구현')
+        self.assertEqual(status()['generation'], '기초 구현')
         for stage in STAGES:
             self.assertTrue((ROOT / "rfp_rag" / stage / ".gitkeep").is_file())
 
     def test_data_path_is_portable(self):
         with patch.dict(os.environ, {"RFP_DATA_DIR": ""}):
-            self.assertEqual(load()["paths"]["data_dir"], ROOT / "data")
+            self.assertEqual(load()["paths"]["data_dir"], ROOT / "data/raw")
         with patch.dict(os.environ, {"RFP_DATA_DIR": "synthetic-data"}):
             self.assertEqual(load()["paths"]["data_dir"], ROOT / "synthetic-data")

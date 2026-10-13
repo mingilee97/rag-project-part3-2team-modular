@@ -1,6 +1,22 @@
-# 공정을 구현할 때 모델과 검색 설정을 이 파일에 추가한다.
+# 가장 단순한 유사도 검색과 한 번의 답변 생성을 연결한다.
 [project]
 name = "rfp-rag-modular"
 
 [paths]
-data_dir = "data"
+data_dir = "data/raw"
+index_path = "data/index/baseline.json"
+
+[chunking]
+size = 800
+overlap = 100
+
+[retrieval]
+top_k = 3
+
+[models]
+provider = "anthropic"
+embedding = "local-tfidf"
+generation = "claude-haiku-4-5-20251001"
+
+[generation]
+max_output_tokens = 2048
