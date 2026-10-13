@@ -12,6 +12,6 @@ top_k = 3
 [models]
 provider = "openai"
 embedding = "text-embedding-3-small"
-generation = "gpt-5-nano"
+generation = "gpt-5-mini"
 [generation]
 max_output_tokens = 2048

@@ -4,17 +4,17 @@
 
 ## 목표와 결정
 
-사용자는 빈 공정 뼈대에서, 바꾼 모듈과 비교할 수 있는 가장 원초적인 작동 기준선을 요청했다. 기존 RAG 구현을 복사하지 않는다. 정확도 개선·비용 최적화·학습·배포·원본 데이터 업로드는 이번 범위가 아니다. 생성 모델은 GPT-5 mini → nano → 최종 Haiku 4.5로 변경됐다. 바탕화면 키 프로그램에 OpenAI 입력칸을 추가하고 실제 실행도 확인하도록 요청받았다.
+사용자는 빈 공정 뼈대에서, 바꾼 모듈과 비교할 수 있는 가장 원초적인 작동 기준선을 요청했다. 기존 RAG 구현을 복사하지 않는다. 정확도 개선·비용 최적화·학습·배포·원본 데이터 업로드는 이번 범위가 아니다. 실제 연결 점검은 Haiku 4.5로 성공했다. 이후 2026-10-13 팀원은 GPT-5 mini를 사용한다고 확정했으므로 팀 기본 설정을 GPT-5 mini + text-embedding-3-small로 변경했다. Haiku + 로컬 TF-IDF는 configs/haiku.toml에 분리했다. 바탕화면 키 프로그램에 OpenAI 입력칸을 추가하고 실제 실행도 확인하도록 요청받았다.
 
 ## 완료와 확인
 
-문서 읽기 → 최소 글 정리 → 문자 800/중첩 100 청킹 → 로컬 TF-IDF 벡터·JSON 색인 → 코사인 Top-3 → Haiku 4.5 한 번 호출을 연결했다. 공통 자료형은 유지한다. 재순위·분류·기억·답변 내용 검증·평가·LangSmith·웹/API 화면은 미구현이다. JSON 응답과 근거 ID 형식만 확인한다.
+팀 기본은 문서 읽기 → 최소 글 정리 → 문자 800/중첩 100 청킹 → text-embedding-3-small·JSON 색인 → 코사인 Top-3 → GPT-5 mini 한 번 호출이다. 공통 자료형은 유지한다. 재순위·분류·기억·답변 내용 검증·평가·LangSmith·웹/API 화면은 미구현이다. JSON 응답과 근거 ID 형식만 확인한다. 실제 API 성공 근거는 아래 Haiku 선택 설정에만 해당한다.
 
 합성 문서 두 개에서 `claude-haiku-4-5-20251001` 호출 1회 성공. 예산 3000만 원과 필수 기능 세 개, 근거 `office.txt:c0`을 반환했다. 공급자 응답에 입력 661·출력 84토큰이 기록됐다. 품질 평가나 원본 100문서 실행 결과는 아니다. 공급자 청구액과 현재 채팅의 정확한 입력/비용 텔레메트리는 확인할 수 없다.
 
 오프라인 unittest 12개, compileall, git diff --check 통과. 선택 의존성 pypdf 6.20.1·olefile 0.47은 프로젝트 .venv에만 설치했다. 기본 TXT·TF-IDF·HTTP 실행은 표준 라이브러리만 사용한다.
 
-OpenAI는 두 번 모두 첫 임베딩 요청에서 HTTP 401로 중단됐다. mini·nano 생성은 실제 호출하지 못했다. configs/openai.toml에 경로를 남겼으나 실제 성공은 미확인이다. 유효한 OpenAI 키가 필요하다. Haiku 기본 실행에는 필요 없다.
+OpenAI는 두 번 모두 첫 임베딩 요청에서 HTTP 401로 중단됐다. mini·nano 생성은 실제 호출하지 못했다. 팀 기본 설정과 configs/openai.toml은 GPT-5 mini로 준비했으나 실제 성공은 미확인이다. 유효한 OpenAI 키가 필요하다. Haiku 선택 실행에는 OpenAI 키가 필요 없다.
 
 ## 키 입력 프로그램
 
@@ -26,6 +26,8 @@ OpenAI는 두 번 모두 첫 임베딩 요청에서 HTTP 401로 중단됐다. mi
 
 ```powershell
 .venv/Scripts/python -m rfp_rag --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
+# 실제 연결을 확인했던 Haiku 설정으로 실행할 때
+.venv/Scripts/python -m rfp_rag --config configs/haiku.toml --data-dir examples/synthetic --build --ask "새봄연구소 사업의 예산과 필수 기능은 무엇인가요?" --usage
 python -m unittest discover -s tests
 python -m rfp_rag
 python -m compileall -q rfp_rag tests
@@ -48,7 +50,7 @@ git diff --check
 ## 보고서와 작업자
 
 최신 보고서: docs/보고서/2026-10-13_기초-RAG.html.
-답변 파일: docs/보고서/2026-10-13_기초-RAG.답변.json. 처리한 saved_at 없음.
+답변 파일: docs/보고서/2026-10-13_기초-RAG.답변.json. 마지막 답변 saved_at: 2026-10-13T13:50:29+09:00. 팀 기본 GPT-5 mini 결정과 원격 상태 확인을 반영한 뒤 feedback.py resolve로 완료를 기록한다. 답변이 있는 기존 보고서는 당시 Haiku 실행 결과로 보존한다. 자동 실행에서는 새 보고서를 만들지 않는다.
 실제 소유 채팅: 01a13382-57d2-7660-8d58-7da99a991fcf. 공식 1분 heartbeat rag를 연결했다. 설정 검증과 실제 예약 실행은 구분한다. 수동 writer 가드는 종료 직전에 해제한다. 답변·상태·launcher JSON은 Git 제외다.
 
 이번 작업은 동일 채팅에서 마무리한다. 전환은 미전달이고 수신 채팅이나 동시 작성자는 없다. 단계 상태는 Git 제외 docs/handoff/baseline-continuity.json에 있다.

@@ -37,7 +37,7 @@ class BaselineTests(unittest.TestCase):
             root = Path(folder)
             (root / 'a.txt').write_text('회의실 예약 사업입니다.', encoding='utf-8')
             (root / 'b.txt').write_text('도서 검색 사업입니다.', encoding='utf-8')
-            config = load()
+            config = load('configs/haiku.toml')
             config['paths'] = {'data_dir': root, 'index_path': root / 'index.json'}
             with patch('rfp_rag.pipeline.create_client', side_effect=AssertionError('로컬 색인은 API를 사용하면 안 됩니다')):
                 build(config)
@@ -63,7 +63,7 @@ class BaselineTests(unittest.TestCase):
             root = Path(folder)
             (root / 'a.txt').write_text('회의실 예약 사업입니다.', encoding='utf-8')
             (root / 'b.txt').write_text('도서 검색 사업입니다.', encoding='utf-8')
-            config = load('configs/openai.toml')
+            config = load()
             config['paths'] = {'data_dir': root, 'index_path': root / 'index.json'}
             config['retrieval']['top_k'] = 1
             client = FakeClient()
@@ -73,7 +73,7 @@ class BaselineTests(unittest.TestCase):
             self.assertTrue(answer.found)
             self.assertEqual(answer.evidence_ids, ('a.txt:c0',))
             self.assertEqual([endpoint for endpoint, _ in client.calls], ['embeddings', 'embeddings', 'responses'])
-            self.assertEqual(client.calls[-1][1]['model'], 'gpt-5-nano')
+            self.assertEqual(client.calls[-1][1]['model'], 'gpt-5-mini')
 
     def test_chunk_overlap_and_short_tail(self):
         chunks = split([Document('a', '0123456789')], size=6, overlap=2)

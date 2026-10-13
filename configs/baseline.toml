@@ -14,9 +14,9 @@ overlap = 100
 top_k = 3
 
 [models]
-provider = "anthropic"
-embedding = "local-tfidf"
-generation = "claude-haiku-4-5-20251001"
+provider = "openai"
+embedding = "text-embedding-3-small"
+generation = "gpt-5-mini"
 
 [generation]
 max_output_tokens = 2048
