@@ -13,6 +13,11 @@ dist/
 data/**
 !data/**/
 !data/**/.gitkeep
+# 팀 공통 평가 자료만 공유하고 원본 문서·색인·실험 결과는 계속 제외한다.
+!data/datasets/README.md
+!data/datasets/dev_benchmark_v1.0.json
+!data/datasets/evaluation_questions.txt
+!data/datasets/EVALUATION_DATASET_GUIDE.pdf
 models/**
 !models/**/
 !models/**/.gitkeep

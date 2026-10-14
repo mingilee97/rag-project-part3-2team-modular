@@ -12,6 +12,8 @@ TXT·MD·CSV·PDF·HWP → 최소 글 정리 → 고정 길이 청크
 
 ## 가장 빠르게 실행하기
 
+팀 공통 평가 질문 300개와 사용 안내는 [평가 자료](data/datasets/README.md)에 있다.
+
 Python 3.11 이상이 필요하다. TXT·MD·CSV 실행에는 외부 패키지가 필요 없다. PDF·HWP도 읽을 때는 선택 의존성을 설치한다.
 
 ```powershell
