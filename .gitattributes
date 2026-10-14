@@ -3,3 +3,8 @@
 *.md text eol=lf
 *.toml text eol=lf
 *.yml text eol=lf
+# 제공된 평가 자료의 원본 바이트와 줄바꿈을 보존한다.
+data/datasets/dev_benchmark_v1.0.json -text
+# TXT 원본의 마지막 빈 줄을 보존하고 다른 공백 검사는 유지한다.
+data/datasets/evaluation_questions.txt -text whitespace=-blank-at-eof
+data/datasets/EVALUATION_DATASET_GUIDE.pdf -text
